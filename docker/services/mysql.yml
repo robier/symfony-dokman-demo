@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+  mysql:
+    hostname: mysql
+    image: mariadb:10.6.2-focal
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      TZ: ${TIMEZONE}
+    volumes:
+      # health check script
+      - ../scripts/health-check/mysql.sh:/usr/local/bin/docker-health-check
+    healthcheck:
+      test: ['CMD', 'docker-health-check']
+
+volumes:
+  mysql:
