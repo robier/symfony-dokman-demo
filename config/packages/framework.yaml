@@ -1,5 +1,12 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
+    http_client:
+        scoped_clients:
+            github.client:
+                base_uri: 'https://api.github.com'
+                headers:
+                    Accept: 'application/vnd.github.v3+json'
+                    Authorization: 'token %env(GITHUB_API_TOKEN)%'
     secret: '%env(APP_SECRET)%'
     #csrf_protection: true
     http_method_override: false

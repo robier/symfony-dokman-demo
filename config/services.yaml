@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.cache.ttl: 10 # value is in seconds
 
 services:
     # default configuration for services in *this* file
@@ -23,3 +24,27 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Controller\:
+        resource: '../src/Controller'
+        tags:
+            - controller.service_arguments
+
+    # Word popularity service section start
+    # To change provider, just replace GitHub with Twitter, or your own provider implementation.
+    # Let's hide concrete implementation behind interface so we can have better (more resilient) configuration.
+    App\Service\WordPopularityService\Provider\ProviderInterface: '@App\Service\WordPopularityService\Provider\GitHub'
+
+    # You shouldn't touch anything after as this configuration wraps (any defined) ProviderInterface into
+    # doctrine wrapper so we can cache API responses to speed up response time of application.
+    App\Service\WordPopularityService\DoctrineCache:
+        decorates: App\Service\WordPopularityService\Provider\ProviderInterface
+        arguments:
+            $provider: '@.inner'
+            $timeToLive: '%app.cache.ttl%'
+
+    App\Service\WordPopularityService:
+        arguments:
+            $provider: '@App\Service\WordPopularityService\Provider\ProviderInterface'
+
+    # Word popularity service section end
