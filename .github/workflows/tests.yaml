@@ -1,0 +1,21 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Build the stack
+        run: docker/env ci build
+      - name: Validate composer.lock
+        run: docker/run ci:php composer validate --strict --no-cache
+      - name: Install dependencies
+        run: docker/run dev:php composer install
+      - name: Execute tests
+        run: docker/run -e XDEBUG_MODE=coverage ci:php vendor/bin/phpunit --verbose --coverage-text --coverage-clover=var/logs/clover.xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          file: var/logs/clover.xml
